@@ -1,61 +1,75 @@
+// Define a user service class
 class UserService {
-    //Переименованные переменные имени пользователя и пароля в _username и _password соответственно, чтобы избежать конфликтов с методами получения.
-    constructor(username, password) {
-      this._username = username;
-      this._password = password;
-    }
-  
-    // Renamed the getter methods to getUsername and getPassword for clarity
-    // Also, changed the return value to return this._username and throw an error if someone tries to access the password
-    getUsername() {
-      return this._username;
-    }
-  
-    getPassword() {
-      throw 'You are not allowed to get password';
-    }
-  
-    // Made the authenticate_user method asynchronous using promises
-    static authenticate_user(username, password) {
-      return new Promise((resolve, reject) => {
-        let xhr = new XMLHttpRequest();
-        xhr.open(
-          'GET',
-          'https://examples.com/api/user/authenticate?username=' +
-            username +
-            '&password=' +
-            password,
-          true
-        );
-        xhr.responseType = 'json';
-  
-        xhr.onload = function () {
-          if (xhr.status == 200) {
-            resolve(true);
-          } else {
-            reject(xhr.response);
-          }
-        };
-  
-        xhr.onerror = function () {
-          reject('An error occurred during the transaction');
-        };
-  
-        xhr.send();
-      });
-    }
+  // Constructor to set the username and password
+  constructor(username, password) {
+    this._username = username;
+    this._password = password;
   }
-  
+
+  // Get the username value
+  getUsername() {
+    return this._username;
+  }
+
+  // Get the password value, but throw an error if called
+  getPassword() {
+    throw new Error('You are not allowed to get the password');
+  }
+
+  // Authenticate a user using the supplied username and password
+  static authenticate_user(username, password) {
+    // Make an HTTP request to authenticate the user using the supplied username and password
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+        
+      // Send a GET request with the supplied username and password
+      xhr.open(
+        'GET',
+        'https://examples.com/api/user/authenticate?username=' +
+        username +
+        '&password=' +
+        password,
+        true
+      );
+      xhr.responseType = 'json';
+
+      // Handle the response from the server
+      xhr.onload = function () {
+        if (xhr.status == 200) {
+          resolve(true);
+        } else {
+          reject(xhr.response);
+        }
+      };
+
+      // Handle errors that occur during the transaction
+      xhr.onerror = function () {
+        reject('An error occurred during the transaction');
+      };
+
+      // Send the request to the server
+      xhr.send();
+    });
+  }
+}
+
+// Wait for the document to be ready
+$(document).ready(function () {
+  // Attach a click handler to the login button
   $('form #login').click(function () {
-    var username = $('#username').val(); // Added .val() to get the value of the input fields
-    var password = $('#password').val(); // Added .val() to get the value of the input fields
-  
+    // Get the username and password values from the input fields
+    var username = $('#username').val(); 
+    var password = $('#password').val();
+
+    // Call the authenticate_user method on the UserService class to authenticate the user
     UserService.authenticate_user(username, password)
       .then(() => {
+        // If authentication is successful, redirect the user to the home page
         document.location.href = '/home';
       })
       .catch((err) => {
+        // If authentication fails, display an error message
         alert(err.error);
       });
   });
-  
+});
